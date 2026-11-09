@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>การประยุกต์ใช้ AI ในการสร้างเว็บไซต์</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0B0914',
+                            card: '#151226',
+                            border: '#2A244D',
+                            purple: '#7C5CFC',
+                            purpleHover: '#6B46FF',
+                            cyan: '#00F2FE',
+                            blue: '#4FACFE',
+                        }
+                    },
+                    boxShadow: {
+                        'glow-purple': '0 0 25px rgba(124, 92, 252, 0.4)',
+                        'glow-cyan': '0 0 25px rgba(0, 242, 254, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0914;
+            color: #E2E8F0;
+            font-family: 'Prompt', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Gradient Text Custom Utilities */
+        .text-gradient {
+            background: linear-gradient(135deg, #00F2FE 0%, #7C5CFC 50%, #FF61D2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #7C5CFC 0%, #00F2FE 100%);
+        }
+
+        .bg-gradient-card {
+            background: linear-gradient(180deg, rgba(21, 18, 38, 0.8) 0%, rgba(15, 12, 28, 0.9) 100%);
+        }
+
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(21, 18, 38, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(124, 92, 252, 0.2);
+        }
+
+        /* Float Animation for Cartoon Graphic */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(1deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .animate-float {
+            animation: float 5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+        .animate-glow {
+            animation: pulse-glow 3s infinite;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0914;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2A244D;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7C5CFC;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-brand-purple selection:text-white">
+
+    <!-- Background Ambient Light Effect -->
+    <div class="fixed top-0 left-1/4 w-96 h-96 bg-brand-purple/20 rounded-full blur-[120px] pointer-events-none animate-glow"></div>
+    <div class="fixed bottom-10 right-1/4 w-96 h-96 bg-brand-cyan/20 rounded-full blur-[120px] pointer-events-none animate-glow"></div>
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="sticky top-0 z-50 glass border-b border-brand-border/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center text-white shadow-glow-purple">
+                        <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold text-white tracking-wide">WebAI</span>
+                        <span class="text-xs text-brand-cyan font-semibold block -mt-1">Studio Lab</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Buttons -->
+                <nav class="hidden md:flex space-x-2 bg-brand-dark/60 p-1.5 rounded-full border border-brand-border">
+                    <button id="nav-home" onclick="switchTab('home')" class="nav-btn text-white bg-brand-purple px-5 py-2 rounded-full font-medium text-sm transition-all shadow-glow-purple flex items-center gap-2">
+                        <i class="fa-solid fa-house"></i> หน้าแรก
+                    </button>
+                    <button id="nav-what-is-ai" onclick="switchTab('what-is-ai')" class="nav-btn text-gray-300 hover:text-white hover:bg-brand-purple/20 px-5 py-2 rounded-full font-medium text-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-brain"></i> AI คืออะไร
+                    </button>
+                    <button id="nav-benefits" onclick="switchTab('benefits')" class="nav-btn text-gray-300 hover:text-white hover:bg-brand-purple/20 px-5 py-2 rounded-full font-medium text-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-rocket"></i> ประโยชน์ของ AI
+                    </button>
+                </nav>
+
+                <!-- Quick Action Button -->
+                <div class="hidden md:block">
+                    <button onclick="openDemoModal()" class="border border-brand-cyan/50 text-brand-cyan hover:bg-brand-cyan/10 px-4 py-2 rounded-xl font-medium text-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-terminal"></i> ทดลองคำสั่ง AI
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="text-gray-300 hover:text-white focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown Navigation -->
+        <div id="mobile-menu" class="hidden md:hidden bg-brand-card/95 border-b border-brand-border px-4 pt-2 pb-4 space-y-2">
+            <button onclick="switchTab('home')" class="w-full text-left text-white bg-brand-purple/30 border border-brand-purple/50 px-4 py-3 rounded-xl font-medium text-sm flex items-center gap-3">
+                <i class="fa-solid fa-house text-brand-cyan"></i> หน้าแรก
+            </button>
+            <button onclick="switchTab('what-is-ai')" class="w-full text-left text-gray-300 hover:bg-brand-border/40 px-4 py-3 rounded-xl font-medium text-sm flex items-center gap-3">
+                <i class="fa-solid fa-brain text-brand-cyan"></i> AI คืออะไร
+            </button>
+            <button onclick="switchTab('benefits')" class="w-full text-left text-gray-300 hover:bg-brand-border/40 px-4 py-3 rounded-xl font-medium text-sm flex items-center gap-3">
+                <i class="fa-solid fa-rocket text-brand-cyan"></i> ประโยชน์ของ AI
+            </button>
+            <button onclick="openDemoModal()" class="w-full text-center bg-gradient-primary text-white font-semibold py-3 rounded-xl text-sm shadow-glow-purple mt-2">
+                <i class="fa-solid fa-terminal mr-1"></i> ทดลองคำสั่ง AI
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
+
+        <!-- ================= PAGE 1: หน้าแรก (HOME) ================= -->
+        <section id="page-home" class="tab-content transition-all duration-500">
+            <!-- Hero Banner -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
+                <!-- Text Column -->
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 bg-brand-purple/20 border border-brand-purple/40 px-4 py-1.5 rounded-full text-brand-cyan text-sm font-medium">
+                        <i class="fa-solid fa-sparkles"></i> นวัตกรรมยุคใหม่แห่งการพัฒนาเว็บ
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
+                        การประยุกต์ใช้ <span class="text-gradient">AI</span><br/>ในการสร้างเว็บไซต์
+                    </h1>
+                    <p class="text-gray-300 text-base sm:text-lg max-w-2xl leading-relaxed">
+                        เปลี่ยนโฉมการเขียนโค้ดและดีไซน์แบบเดิมๆ ด้วยพลังของปัญญาประดิษฐ์ ช่วยเร่งความเร็วในการพัฒนา ออกแบบ UX/UI อัตโนมัติ และสร้างประสบการณ์ผู้ใช้ระดับพรีเมียม
+                    </p>
+                    <div class="flex flex-wrap gap-4 justify-center lg:justify-start pt-2">
+                        <button onclick="switchTab('what-is-ai')" class="bg-gradient-primary hover:opacity-90 text-white font-semibold px-8 py-3.5 rounded-xl text-base shadow-glow-purple transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
+                            เริ่มเรียนรู้ AI <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                        <button onclick="openDemoModal()" class="glass hover:bg-brand-purple/20 text-white font-medium px-6 py-3.5 rounded-xl text-base border border-brand-border transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-code text-brand-cyan"></i> ทดลองใช้งานคำสั่ง
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cartoon Image Column (นำรูปภาพการ์ตูน AI Website Builder มาใส่) -->
+                <div class="lg:col-span-5 flex justify-center relative">
+                    <!-- Glow Circle behind Graphic -->
+                    <div class="absolute w-72 h-72 sm:w-80 sm:h-80 bg-gradient-to-tr from-brand-purple to-brand-cyan rounded-full filter blur-2xl opacity-50 animate-pulse"></div>
+                    
+                    <!-- Main Cartoon Graphic Container -->
+                    <div class="relative w-full max-w-md animate-float p-3 glass rounded-3xl border border-brand-purple/40 shadow-glow-purple bg-brand-card/70 group">
+                        <!-- Cartoon Image Generated -->
+                        <div class="overflow-hidden rounded-2xl border border-brand-border relative">
+                            <img src="input_file_0.png" alt="AI Website Builder Cartoon" class="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/600x400/151226/00F2FE?text=AI+Website+Builder';"/>
+                            <div class="absolute bottom-3 left-3 right-3 bg-brand-dark/80 backdrop-blur-md p-2.5 rounded-xl border border-brand-purple/40 flex items-center justify-between text-xs">
+                                <span class="text-white font-semibold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-robot text-brand-cyan"></i> AI Bot Assistance
+                                </span>
+                                <span class="bg-brand-purple text-white px-2 py-0.5 rounded-full font-bold">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Feature Highlights Grid -->
+            <div class="mt-8">
+                <div class="text-center mb-10">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">เครื่องมือ AI พลิกโฉมการทำเว็บ</h2>
+                    <p class="text-gray-400 mt-2 text-sm sm:text-base">ครอบคลุมทุกมิติของการพัฒนาเว็บไซต์สมัยใหม่</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Feature 1 -->
+                    <div class="glass p-6 rounded-2xl border border-brand-border hover:border-brand-purple/60 transition-all hover:-translate-y-1 group">
+                        <div class="w-12 h-12 rounded-xl bg-brand-purple/20 border border-brand-purple/40 flex items-center justify-center text-brand-purple mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-code text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">1. AI Code Generator</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            เขียนโค้ด HTML, CSS, JavaScript และ Framework ต่างๆ ได้ในเวลาไม่กี่วินาที เพียงพิมพ์อธิบายความต้องการผ่าน Prompt
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="glass p-6 rounded-2xl border border-brand-border hover:border-brand-cyan/60 transition-all hover:-translate-y-1 group">
+                        <div class="w-12 h-12 rounded-xl bg-brand-cyan/20 border border-brand-cyan/40 flex items-center justify-center text-brand-cyan mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-pen-nib text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">2. Automated UI/UX Design</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            สร้างเค้าโครงเว็บไซต์ เลย์เอาต์ สีสัน และส่วนประกอบ UI ที่สวยงามสอดคล้องกับแบรนด์โดยอัตโนมัติ
+                        </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="glass p-6 rounded-2xl border border-brand-border hover:border-brand-purple/60 transition-all hover:-translate-y-1 group">
+                        <div class="w-12 h-12 rounded-xl bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400 mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-user-gear text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">3. Personalization & Chatbot</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            ติดตั้งระบบตอบคำถามลูกค้าด้วย AI Chatbot และระบบแนะนำเนื้อหาเฉพาะบุคคลแบบ Real-time
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 2: AI คืออะไร (WHAT IS AI) ================= -->
+        <section id="page-what-is-ai" class="tab-content hidden transition-all duration-500">
+            <!-- Header -->
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="text-brand-cyan text-sm font-semibold tracking-wider uppercase bg-brand-cyan/10 px-3 py-1 rounded-full border border-brand-cyan/30">
+                    ความรู้พื้นฐาน AI
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mt-3 mb-4">
+                    นิยามและกลไกของ <span class="text-gradient">Artificial Intelligence</span>
+                </h2>
+                <p class="text-gray-300 text-base leading-relaxed">
+                    ปัญญาประดิษฐ์ (AI) คือเทคโนโลยีคอมพิวเตอร์ที่ถูกพัฒนาให้มีความฉลาดและคิดวิเคราะห์ได้คล้ายมนุษย์ สามารถเรียนรู้ แก้ปัญหา และตัดสินใจได้ด้วยตนเอง
+                </p>
+            </div>
+
+            <!-- Banner With Inserted Cartoon Image -->
+            <div class="glass p-6 sm:p-8 rounded-3xl border border-brand-purple/40 mb-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div class="md:col-span-5">
+                    <img src="input_file_0.png" alt="AI Developer Cartoon" class="rounded-2xl border border-brand-border shadow-glow-purple w-full h-auto object-cover" onerror="this.onerror=null; this.src='https://placehold.co/600x400/151226/00F2FE?text=AI+Website+Builder';"/>
+                </div>
+                <div class="md:col-span-7 space-y-4">
+                    <h3 class="text-2xl font-bold text-white">หุ่นยนต์ AI และการพัฒนาเว็บไซต์</h3>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        การใช้ AI ในปัจจุบันเปรียบเสมือนมีคู่หูโปรแกรมเมอร์ส่วนตัว (AI Co-Pilot) ที่คอยช่วยเขียนโค้ด จัดการดีไซน์ UI ค้นหาข้อผิดพลาด และช่วยปรับแต่งหน้าเว็บให้ออกมาตรงใจผู้ใช้งานอย่างรวดเร็วที่สุด
+                    </p>
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        <span class="bg-brand-purple/20 text-brand-cyan border border-brand-purple/40 px-3 py-1 rounded-lg text-xs font-semibold">🤖 Smart Code Assistant</span>
+                        <span class="bg-brand-purple/20 text-brand-cyan border border-brand-purple/40 px-3 py-1 rounded-lg text-xs font-semibold">⚡ Fast Development</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deep Dive Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- Box 1: Machine Learning & Deep Learning -->
+                <div class="glass p-8 rounded-3xl border border-brand-border relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-purple/20 rounded-full blur-3xl"></div>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center text-white text-2xl shadow-glow-purple">
+                            <i class="fa-solid fa-network-wired"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white">หัวใจของ AI ในงานเว็บ</h3>
+                            <span class="text-brand-cyan text-sm">Machine Learning & LLMs</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-4">
+                        ในการสร้างเว็บไซต์ AI ใช้โมเดลการเรียนรู้เชิงลึก (Deep Learning) และโมเดลภาษาขนาดใหญ่ (Large Language Models - LLMs) ในการจดจำรูปแบบโครงสร้างโค้ด การจับคู่อินเทอร์เฟซ และความชอบของผู้ใช้งาน
+                    </p>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-brand-cyan"></i>
+                            <span><strong>Natural Language Processing (NLP):</strong> แปลงคำสั่งภาษาคนเป็น HTML/CSS</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-brand-cyan"></i>
+                            <span><strong>Computer Vision:</strong> แปลงภาพวาด Wireframe เป็นโค้ดเว็บไซต์ได้ทันที</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-brand-cyan"></i>
+                            <span><strong>Predictive Analytics:</strong> คาดเดาพฤติกรรมผู้เข้าชมเพื่อปรับแต่งหน้าเว็บ</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Box 2: Evolution of Web Dev -->
+                <div class="glass p-8 rounded-3xl border border-brand-border relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-cyan/20 rounded-full blur-3xl"></div>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-r from-brand-cyan to-blue-500 flex items-center justify-center text-white text-2xl shadow-glow-cyan">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white">การวิวัฒนาการทำเว็บไซต์</h3>
+                            <span class="text-brand-purple text-sm">From Manual to AI-Assisted</span>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="p-3.5 bg-brand-dark/60 rounded-xl border border-brand-border flex items-start gap-3">
+                            <span class="bg-gray-700 text-xs px-2.5 py-1 rounded text-white font-bold mt-0.5">ยุคเดิม</span>
+                            <p class="text-xs text-gray-300">เขียนโค้ดบรรทัดต่อบรรทัด ออกแบบกราฟิกแยกต่างหาก ใช้เวลาพัฒนาหลายสัปดาห์หรือหลายเดือน</p>
+                        </div>
+                        <div class="p-3.5 bg-brand-purple/10 rounded-xl border border-brand-purple/30 flex items-start gap-3">
+                            <span class="bg-brand-purple text-xs px-2.5 py-1 rounded text-white font-bold mt-0.5">ยุค AI</span>
+                            <p class="text-xs text-gray-200">สร้างโครงร่างเว็บ ดีไซน์ สคริปต์ และเนื้อหาได้แบบอัตโนมัติภายในไม่กี่นาที ด้วยปัญญาประดิษฐ์</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-brand-border flex justify-between items-center text-xs text-gray-400">
+                        <span><i class="fa-solid fa-clock text-brand-cyan"></i> ประหยัดเวลาขึ้น 70%</span>
+                        <span><i class="fa-solid fa-shield-halved text-brand-purple"></i> ลดข้อผิดพลาดในโค้ด</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Workflow Diagram -->
+            <div class="glass p-8 rounded-3xl border border-brand-border text-center">
+                <h3 class="text-xl font-bold text-white mb-6">ขั้นตอนการทำงานของ AI ในการสร้างเว็บไซต์</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-brand-dark/80 p-5 rounded-2xl border border-brand-border relative">
+                        <div class="text-brand-cyan font-extrabold text-2xl mb-2">01</div>
+                        <h4 class="text-white font-semibold mb-1">รับคำสั่ง (Prompt)</h4>
+                        <p class="text-xs text-gray-400">ระบุความต้องการ เช่น "สร้างเว็บร้านกาแฟ โทนสีมินิมอล"</p>
+                    </div>
+                    <div class="bg-brand-dark/80 p-5 rounded-2xl border border-brand-border relative">
+                        <div class="text-brand-purple font-extrabold text-2xl mb-2">02</div>
+                        <h4 class="text-white font-semibold mb-1">ประมวลผล & ดีไซน์</h4>
+                        <p class="text-xs text-gray-400">AI คัดเลือกโทนสี ฟอนต์ และจัด Layout โครงสร้างหน้าเว็บ</p>
+                    </div>
+                    <div class="bg-brand-dark/80 p-5 rounded-2xl border border-brand-border relative">
+                        <div class="text-pink-400 font-extrabold text-2xl mb-2">03</div>
+                        <h4 class="text-white font-semibold mb-1">สร้างโค้ดอัตโนมัติ</h4>
+                        <p class="text-xs text-gray-400">แปลงงานดีไซน์เป็น HTML, CSS และ JavaScript พร้อมใช้งาน</p>
+                    </div>
+                    <div class="bg-brand-dark/80 p-5 rounded-2xl border border-brand-border relative">
+                        <div class="text-green-400 font-extrabold text-2xl mb-2">04</div>
+                        <h4 class="text-white font-semibold mb-1">ปรับแต่ง & ปรับปรุง</h4>
+                        <p class="text-xs text-gray-400">นักพัฒนาตรวจสอบรายละเอียดเพิ่มเติมและเปิดใช้งานจริง</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 3: ประโยชน์ของ AI (BENEFITS) ================= -->
+        <section id="page-benefits" class="tab-content hidden transition-all duration-500">
+            <!-- Header -->
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="text-brand-purple text-sm font-semibold tracking-wider uppercase bg-brand-purple/10 px-3 py-1 rounded-full border border-brand-purple/30">
+                    คุ้มค่า & มีประสิทธิภาพ
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-bold text-white mt-3 mb-4">
+                    ประโยชน์ของการนำ <span class="text-gradient">AI มาใช้สร้างเว็บไซต์</span>
+                </h2>
+                <p class="text-gray-300 text-base">
+                    เพิ่มขีดความสามารถ เพิ่มความเร็ว และสร้างประสบการณ์ผู้ใช้ระดับเหนือชั้น
+                </p>
+            </div>
+
+            <!-- Stats Highlight -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                <div class="glass p-6 rounded-2xl border border-brand-border text-center">
+                    <div class="text-3xl sm:text-4xl font-extrabold text-brand-cyan mb-1">10x</div>
+                    <div class="text-xs sm:text-sm text-gray-300">พัฒนาเว็บไวขึ้น</div>
+                </div>
+                <div class="glass p-6 rounded-2xl border border-brand-border text-center">
+                    <div class="text-3xl sm:text-4xl font-extrabold text-brand-purple mb-1">60%</div>
+                    <div class="text-xs sm:text-sm text-gray-300">ลดต้นทุนการพัฒนา</div>
+                </div>
+                <div class="glass p-6 rounded-2xl border border-brand-border text-center">
+                    <div class="text-3xl sm:text-4xl font-extrabold text-pink-400 mb-1">24/7</div>
+                    <div class="text-xs sm:text-sm text-gray-300">บริการลูกค้าผ่าน Chatbot</div>
+                </div>
+                <div class="glass p-6 rounded-2xl border border-brand-border text-center">
+                    <div class="text-3xl sm:text-4xl font-extrabold text-green-400 mb-1">99%</div>
+                    <div class="text-xs sm:text-sm text-gray-300">ความแม่นยำของโค้ด</div>
+                </div>
+            </div>
+
+            <!-- Detailed Benefits Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Benefit 1 -->
+                <div class="glass p-6 rounded-2xl border border-brand-border flex gap-5 items-start">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-500/40 flex-shrink-0 flex items-center justify-center text-blue-400 text-xl">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">ประหยัดเวลาและเพิ่มความเร็ว (Speed & Efficiency)</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            ลดเวลาในการเขียนโค้ดเริ่มต้น (Boilerplate Code) ช่วยให้โปรแกรมเมอร์และนักออกแบบเปิดตัวเว็บไซต์ได้เร็วขึ้นอย่างมหาศาล สามารถนำไอเดียมาสร้างเป็น prototype ได้ภายในไม่กี่นาที
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Benefit 2 -->
+                <div class="glass p-6 rounded-2xl border border-brand-border flex gap-5 items-start">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-500/40 flex-shrink-0 flex items-center justify-center text-purple-400 text-xl">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">สร้างประสบการณ์เฉพาะบุคคล (Personalization)</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            AI สามารถวิเคราะห์พฤติกรรมผู้เข้าชมเว็บแต่ละคน เพื่อปรับเปลี่ยนเนื้อหา สินค้าแนะนำ หรือภาพประกอบให้ตรงตามความสนใจของผู้ใช้งานท่านนั้นแบบ Real-time
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Benefit 3 -->
+                <div class="glass p-6 rounded-2xl border border-brand-border flex gap-5 items-start">
+                    <div class="w-12 h-12 rounded-xl bg-teal-500/20 border border-teal-500/40 flex-shrink-0 flex items-center justify-center text-teal-400 text-xl">
+                        <i class="fa-solid fa-bug-slash"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">ตรวจสอบและแก้ไขข้อผิดพลาด (Automated Testing)</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            ระบบ AI ช่วยค้นพบ Bug อัตโนมัติ ตรวจสอบความปลอดภัย ตรวจเช็คความสมบูรณ์ของโครงสร้างลิงก์ และเสนอวิธีแก้ไขโค้ดที่ถูกต้องให้โดยทันที
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Benefit 4 -->
+                <div class="glass p-6 rounded-2xl border border-brand-border flex gap-5 items-start">
+                    <div class="w-12 h-12 rounded-xl bg-yellow-500/20 border border-yellow-500/40 flex-shrink-0 flex items-center justify-center text-yellow-400 text-xl">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-2">วิเคราะห์ข้อมูลและ SEO อัตโนมัติ (AI SEO)</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">
+                            ช่วยปรับแต่งโครงสร้างเนื้อหา สร้าง Meta Tags สรุปบทความ และค้นหาคำค้นหา (Keywords) ติดอันดับ Google ได้ง่ายยิ่งขึ้น
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action Banner inside Benefits -->
+            <div class="mt-12 bg-gradient-to-r from-brand-purple/40 to-brand-cyan/30 p-8 rounded-3xl border border-brand-purple/50 text-center relative overflow-hidden">
+                <h3 class="text-2xl font-bold text-white mb-3">พร้อมที่จะลองประยุกต์ใช้ AI สร้างเว็บไซต์ของคุณหรือยัง?</h3>
+                <p class="text-gray-200 text-sm max-w-xl mx-auto mb-6">
+                    คลิกปุ่มด้านล่างเพื่อทดลองส่งคำสั่งให้ AI ช่วยสร้างองค์ประกอบเว็บไซต์ได้ทันที
+                </p>
+                <button onclick="openDemoModal()" class="bg-white text-brand-dark hover:bg-gray-100 font-bold px-8 py-3 rounded-xl text-sm shadow-lg transition-all">
+                    <i class="fa-solid fa-play text-brand-purple mr-2"></i> เปิดหน้าต่างทดลองคำสั่ง AI
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-brand-border/60 bg-brand-dark/90 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+            <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-lg bg-gradient-primary flex items-center justify-center text-white text-xs">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <span class="text-gray-300 font-medium">การประยุกต์ใช้ AI ในการสร้างเว็บไซต์</span>
+            </div>
+            <div>
+                © 2026 WebAI Studio. ธีมสีม่วง-ฟ้า (Purple & Neon Blue Edition)
+            </div>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE DEMO MODAL (หน้าต่างทดลองคำสั่ง) -->
+    <div id="demo-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md hidden transition-opacity">
+        <div class="glass max-w-2xl w-full rounded-3xl border border-brand-purple/50 shadow-glow-purple overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-brand-card px-6 py-4 border-b border-brand-border flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center text-white text-sm">
+                        <i class="fa-solid fa-terminal"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold text-base">จำลองการสั่งงาน AI (AI Prompt Console)</h3>
+                        <p class="text-xs text-brand-cyan">ทดลองใส่คำสั่งเพื่อสร้างองค์ประกอบเว็บ</p>
+                    </div>
+                </div>
+                <button onclick="closeDemoModal()" class="text-gray-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4">
+                <!-- Small Cartoon Thumbnail in Modal -->
+                <div class="flex items-center gap-4 bg-brand-dark/80 p-3 rounded-2xl border border-brand-border">
+                    <img src="input_file_0.png" class="w-16 h-16 rounded-xl object-cover border border-brand-purple/50" alt="Mini Mascot" onerror="this.onerror=null; this.src='https://placehold.co/100/151226/00F2FE?text=AI';"/>
+                    <div>
+                        <h4 class="text-white text-sm font-bold">AI Web Builder Console</h4>
+                        <p class="text-xs text-gray-400">เลือกคำสั่งเพื่อจำลองการเจนเนอเรตโค้ดและ UI ด้วยระบบปัญญาประดิษฐ์</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-2">เลือกตัวอย่างคำสั่งสั่งงาน AI (Preset Prompts):</label>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="setPrompt('สร้างปุ่มสไตล์ Cyberpunk พร้อม Glow Effect โทนสีม่วง')" class="text-xs bg-brand-dark hover:bg-brand-purple/30 border border-brand-border text-gray-300 hover:text-white px-3 py-1.5 rounded-lg transition-all">
+                            ✨ สร้างปุ่ม Cyberpunk
+                        </button>
+                        <button onclick="setPrompt('สร้างการ์ดแนะนำตัวละครการ์ตูน AI ความคิดสร้างสรรค์สูง')" class="text-xs bg-brand-dark hover:bg-brand-purple/30 border border-brand-border text-gray-300 hover:text-white px-3 py-1.5 rounded-lg transition-all">
+                            🎨 การ์ดตัวละครการ์ตูน
+                        </button>
+                        <button onclick="setPrompt('เขียนฟังก์ชัน JavaScript คัดลอกข้อความลง Clipboard อัตโนมัติ')" class="text-xs bg-brand-dark hover:bg-brand-purple/30 border border-brand-border text-gray-300 hover:text-white px-3 py-1.5 rounded-lg transition-all">
+                            💻 ฟังก์ชัน JS Clipboard
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="prompt-input" class="block text-xs font-semibold text-gray-300 mb-1">ข้อความคำสั่ง (Prompt):</label>
+                    <textarea id="prompt-input" rows="3" class="w-full bg-brand-dark border border-brand-border rounded-xl p-3 text-sm text-white focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple" placeholder="พิมพ์คำสั่งที่คุณต้องการให้ AI สร้างเว็บไซต์ เช่น 'สร้าง Navbar โทนสีม่วง'"></textarea>
+                </div>
+
+                <!-- Simulation Output Box -->
+                <div id="ai-output-box" class="hidden bg-brand-dark/90 border border-brand-border rounded-xl p-4">
+                    <div class="flex items-center justify-between text-xs text-brand-cyan mb-2 font-mono">
+                        <span><i class="fa-solid fa-check-circle"></i> AI ประมวลผลสำเร็จ:</span>
+                        <span id="output-time">0.4s</span>
+                    </div>
+                    <pre id="ai-output-text" class="text-xs font-mono text-gray-300 overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-40 p-2 bg-black/40 rounded-lg border border-brand-border/40"></pre>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-brand-card px-6 py-4 border-t border-brand-border flex justify-between items-center">
+                <button onclick="closeDemoModal()" class="text-xs text-gray-400 hover:text-white font-medium">
+                    ปิดหน้าต่าง
+                </button>
+                <button onclick="generateAIResult()" id="generate-btn" class="bg-gradient-primary hover:opacity-90 text-white font-semibold px-6 py-2.5 rounded-xl text-sm shadow-glow-purple transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> สั่งงาน AI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Tab Navigation Switching Logic
+        function switchTab(tabId) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+
+            // Show selected tab
+            const selectedTab = document.getElementById(`page-${tabId}`);
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+            }
+
+            // Update Navigation Button Styles
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                btn.classList.remove('text-white', 'bg-brand-purple', 'shadow-glow-purple');
+                btn.classList.add('text-gray-300');
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-300');
+                activeBtn.classList.add('text-white', 'bg-brand-purple', 'shadow-glow-purple');
+            }
+
+            // Close mobile menu if open
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Interactive Demo Modal Logic
+        function openDemoModal() {
+            const modal = document.getElementById('demo-modal');
+            modal.classList.remove('hidden');
+        }
+
+        function closeDemoModal() {
+            const modal = document.getElementById('demo-modal');
+            modal.classList.add('hidden');
+            // Reset output
+            document.getElementById('ai-output-box').classList.add('hidden');
+        }
+
+        function setPrompt(text) {
+            document.getElementById('prompt-input').value = text;
+        }
+
+        // Simulate AI Code Generation Process
+        function generateAIResult() {
+            const promptInput = document.getElementById('prompt-input').value.trim();
+            const outputBox = document.getElementById('ai-output-box');
+            const outputText = document.getElementById('ai-output-text');
+            const generateBtn = document.getElementById('generate-btn');
+
+            if (!promptInput) {
+                alert('กรุณาพิมพ์หรือเลือกคำสั่งสั่งงาน AI ก่อนครับ');
+                return;
+            }
+
+            // UI Loading state
+            generateBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> กำลังประมวลผล...';
+            generateBtn.disabled = true;
+
+            setTimeout(() => {
+                let generatedCode = "";
+                if (promptInput.includes(" Cyberpunk")) {
+                    generatedCode = `<button class="px-6 py-3 bg-purple-600 text-cyan-300 font-bold rounded-xl border border-cyan-400 shadow-[0_0_15px_#00f2fe] hover:scale-105 transition-all">\n  🚀 CYBERPUNK BUTTON\n</button>`;
+                } else if (promptInput.includes("การ์ดตัวละคร")) {
+                    generatedCode = `<div class="p-4 bg-slate-900 border border-purple-500 rounded-2xl text-white shadow-xl">\n  <img src="avatar.png" class="w-16 h-16 rounded-full border-2 border-cyan-400 mb-2" />\n  <h4 class="font-bold text-cyan-400">AI Mascot Bot</h4>\n  <p class="text-xs text-gray-400">ผู้ช่วยสร้างเว็บไซต์อัจฉริยะ</p>\n</div>`;
+                } else if (promptInput.includes("Clipboard")) {
+                    generatedCode = `function copyToClipboard(text) {\n  const el = document.createElement('textarea');\n  el.value = text;\n  document.body.appendChild(el);\n  el.select();\n  document.execCommand('copy');\n  document.body.removeChild(el);\n  console.log('คัดลอกข้อความเรียบร้อยแล้ว!');\n}`;
+                } else {
+                    generatedCode = `<!-- ผลลัพธ์โค้ดจาก AI คำสั่ง: "${promptInput}" -->\n<div class="p-4 bg-purple-950/60 border border-purple-500/40 rounded-xl text-cyan-300">\n  <h3 class="font-bold text-lg">AI Generated Component</h3>\n  <p class="text-sm text-gray-300">โค้ดเว็บไซต์ถูกสร้างสำเร็จเรียบร้อยตามคำสั่งของคุณ</p>\n</div>`;
+                }
+
+                outputText.textContent = generatedCode;
+                outputBox.classList.remove('hidden');
+
+                generateBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> สั่งงาน AI อีกครั้ง';
+                generateBtn.disabled = false;
+            }, 800);
+        }
+    </script>
+</body>
+</html>
